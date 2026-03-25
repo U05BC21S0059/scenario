@@ -1,1 +1,825 @@
-# scenario
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinPlan Pro</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--bg:#0b0f1a;--surf:#131929;--surf2:#1a2236;--bdr:#253048;--acc:#3d8ef0;--grn:#00d9a6;--amb:#f0a23d;--red:#f04f4f;--txt:#e8edf5;--mut:#7a8ba8;--card:#16202e;--gld:#c9a84c}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:system-ui,sans-serif;min-height:100vh;overflow-x:hidden;font-size:14px}
+header{background:#0d1626;border-bottom:1px solid var(--bdr);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:100}
+.logo{font-size:18px;font-weight:700;color:var(--acc)}.logo span{color:var(--grn)}
+.hdr-r{display:flex;align-items:center;gap:10px}
+.fy-wrap{display:flex;align-items:center;gap:6px;background:var(--surf2);border:1px solid var(--bdr);border-radius:7px;padding:5px 12px}
+.fy-wrap label{font-size:11px;color:var(--mut);font-weight:600;text-transform:uppercase;letter-spacing:1px}
+.fy-wrap select{background:transparent;border:none;color:var(--acc);font-size:13px;font-weight:700;outline:none;cursor:pointer}
+.layout{display:flex;min-height:calc(100vh - 58px)}
+nav{width:210px;background:var(--surf);border-right:1px solid var(--bdr);padding:16px 0;flex-shrink:0}
+.ng{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--mut);padding:10px 16px 3px;font-weight:700}
+.ni{display:flex;align-items:center;gap:8px;padding:8px 16px;cursor:pointer;color:var(--mut);font-size:13px;border-left:3px solid transparent;transition:all .15s;user-select:none}
+.ni:hover{color:var(--txt);background:var(--surf2)}.ni.on{color:var(--acc);background:rgba(61,142,240,.08);border-left-color:var(--acc)}
+main{flex:1;padding:28px;overflow-y:auto}
+.pg{display:none}.pg.on{display:block;animation:fi .25s ease}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.ph{margin-bottom:22px}.ph h1{font-size:22px;font-weight:700;margin-bottom:3px}.ph p{font-size:12px;color:var(--mut)}
+.card{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:20px;margin-bottom:18px}
+.ch{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--mut);font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--acc);flex-shrink:0}
+.fg{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.fi{display:flex;flex-direction:column;gap:5px}
+.fi label{font-size:11px;color:var(--mut);font-weight:600}
+.fi input,.fi select{background:var(--surf2);border:1px solid var(--bdr);border-radius:7px;padding:8px 11px;color:var(--txt);font-size:13px;outline:none;font-family:inherit;transition:border .15s}
+.fi input:focus,.fi select:focus{border-color:var(--acc)}.fi input.err{border-color:var(--red) !important}
+.rerr{color:var(--red);font-size:11px;display:none;align-items:center;gap:3px}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 16px;border-radius:7px;border:none;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit;transition:all .15s}
+.bp{background:var(--acc);color:#fff}.bp:hover{filter:brightness(1.1)}
+.bg2{background:var(--grn);color:#062018}.bg2:hover{filter:brightness(1.1)}
+.bgh{background:transparent;border:1px solid var(--bdr);color:var(--mut)}.bgh:hover{border-color:var(--acc);color:var(--acc)}
+.bd{background:rgba(240,79,79,.1);border:1px solid rgba(240,79,79,.3);color:var(--red)}.bd:hover{background:rgba(240,79,79,.2)}
+.bs{padding:4px 10px;font-size:11px}.btn:disabled{opacity:.5;cursor:default}
+.ar{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center}
+.tw{overflow-x:auto;border-radius:8px;border:1px solid var(--bdr)}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead tr{background:var(--surf2)}
+thead th{padding:9px 12px;text-align:left;color:var(--mut);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.8px;white-space:nowrap;border-bottom:1px solid var(--bdr)}
+tbody tr{border-bottom:1px solid rgba(37,48,72,.5)}
+tbody tr:hover{background:rgba(61,142,240,.03)}
+td{padding:8px 12px;color:var(--txt)}
+td input,td select{background:var(--surf);border:1px solid transparent;border-radius:5px;padding:4px 7px;color:var(--txt);font-size:12.5px;width:100%;outline:none;font-family:inherit}
+td input:focus,td select:focus{border-color:var(--acc);background:var(--surf2)}
+.tn{font-family:monospace;text-align:right;color:var(--grn)}.tc{font-family:monospace;text-align:right;color:var(--gld)}.tt{background:var(--surf2);font-weight:700}
+.kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:14px;margin-bottom:20px}
+.kpi{background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:15px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--acc)}
+.kpi.g::before{background:var(--grn)}.kpi.r::before{background:var(--red)}.kpi.o::before{background:var(--gld)}
+.kl{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mut);font-weight:700;margin-bottom:7px}
+.kv{font-family:monospace;font-size:20px;font-weight:600}.ks{font-size:10px;color:var(--mut);margin-top:3px}
+.brow{display:flex;align-items:center;gap:10px;margin-bottom:5px}
+.blbl{width:55px;font-size:11px;color:var(--mut);text-align:right;font-family:monospace}
+.btrk{flex:1;height:16px;background:var(--surf2);border-radius:3px;overflow:hidden}
+.bfil{height:100%;border-radius:3px;transition:width .5s ease}.bval{width:85px;font-size:11px;font-family:monospace}
+.prow{margin-bottom:12px}.plbl{display:flex;justify-content:space-between;margin-bottom:4px;font-size:12px}
+.ptrk{height:7px;background:var(--surf2);border-radius:3px;overflow:hidden}
+.pfil{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--acc),var(--grn));transition:width .7s}
+.tag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700}
+.tg{background:rgba(0,217,166,.12);color:var(--grn)}.tr2{background:rgba(240,79,79,.12);color:var(--red)}.tb{background:rgba(61,142,240,.12);color:var(--acc)}.to{background:rgba(201,168,76,.12);color:var(--gld)}
+.req{color:var(--red)}.muted{color:var(--mut);font-size:12px}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:3px}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Fin<span>Plan</span> Pro</div>
+  <div class="hdr-r">
+    <div class="fy-wrap">
+      <label>FY</label>
+      <select id="fysel" onchange="onFY()">
+        <option value="2022">2022-23</option><option value="2023">2023-24</option>
+        <option value="2024">2024-25</option><option value="2025" selected>2025-26</option>
+        <option value="2026">2026-27</option><option value="2027">2027-28</option>
+        <option value="2028">2028-29</option><option value="2029">2029-30</option>
+        <option value="2030">2030-31</option>
+      </select>
+    </div>
+    <button class="btn bp bs" onclick="saveLocal()">Save</button>
+    <button class="btn bg2 bs" id="expbtn" onclick="doExport()">Export Excel</button>
+  </div>
+</header>
+<div class="layout">
+<nav>
+  <div class="ng">Overview</div>
+  <div class="ni on" onclick="go('dash')" id="n-dash">Dashboard</div>
+  <div class="ng">Profile</div>
+  <div class="ni" onclick="go('about')" id="n-about">About You</div>
+  <div class="ni" onclick="go('goals')" id="n-goals">Goals</div>
+  <div class="ng">Finances</div>
+  <div class="ni" onclick="go('inflows')" id="n-inflows">Inflows</div>
+  <div class="ni" onclick="go('outflows')" id="n-outflows">Outflows</div>
+  <div class="ni" onclick="go('assets')" id="n-assets">Assets</div>
+  <div class="ni" onclick="go('loans')" id="n-loans">Loans</div>
+  <div class="ni" onclick="go('insurance')" id="n-insurance">Insurance</div>
+  <div class="ng">Analysis</div>
+  <div class="ni" onclick="go('cashflow')" id="n-cashflow">Cash Flow</div>
+  <div class="ni" onclick="go('retire')" id="n-retire">Post Retirement</div>
+  <div class="ni" onclick="go('portfolio')" id="n-portfolio">Portfolio</div>
+</nav>
+<main>
+<!-- DASHBOARD -->
+<div class="pg on" id="pg-dash">
+  <div class="ph"><h1>Dashboard</h1><p>Complete financial snapshot</p></div>
+  <div class="kgrid">
+    <div class="kpi"><div class="kl">Monthly Inflow</div><div class="kv" id="k-in">0</div></div>
+    <div class="kpi r"><div class="kl">Monthly Outflow</div><div class="kv" id="k-out">0</div></div>
+    <div class="kpi g"><div class="kl">Monthly Surplus</div><div class="kv" id="k-sur">0</div></div>
+    <div class="kpi o"><div class="kl">Total Assets</div><div class="kv" id="k-ast">0</div></div>
+    <div class="kpi r"><div class="kl">Liabilities</div><div class="kv" id="k-lib">0</div></div>
+    <div class="kpi g"><div class="kl">Net Worth</div><div class="kv" id="k-nw">0</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+    <div class="card">
+      <div class="ch"><span class="dot" style="background:var(--grn)"></span>Monthly Cash Flow</div>
+      <div class="brow"><div class="blbl">Inflow</div><div class="btrk"><div class="bfil" id="bi" style="width:0%;background:linear-gradient(90deg,var(--grn),#00a880)"></div></div><div class="bval" id="bvi">0</div></div>
+      <div class="brow"><div class="blbl">Outflow</div><div class="btrk"><div class="bfil" id="bo" style="width:0%;background:linear-gradient(90deg,var(--red),#c03232)"></div></div><div class="bval" id="bvo">0</div></div>
+      <div class="brow"><div class="blbl">Surplus</div><div class="btrk"><div class="bfil" id="bs2" style="width:0%;background:linear-gradient(90deg,var(--acc),#2d5fb0)"></div></div><div class="bval" id="bvs">0</div></div>
+    </div>
+    <div class="card"><div class="ch"><span class="dot" style="background:var(--gld)"></span>Goals</div><div id="d-goals"><div class="muted">No goals added.</div></div></div>
+  </div>
+  <div class="card"><div class="ch"><span class="dot" style="background:var(--amb)"></span>Family</div><div id="d-fam"><div class="muted">Fill About You.</div></div></div>
+  <div class="card"><div class="ch"><span class="dot"></span>Insurance</div><div id="d-ins"><div class="muted">No policies.</div></div></div>
+</div>
+<!-- ABOUT -->
+<div class="pg" id="pg-about">
+  <div class="ph"><h1>About You</h1><p>Personal and family details &nbsp;<span class="req">* = required</span></p></div>
+  <div class="card">
+    <div class="ch"><span class="dot"></span>Planning Year</div>
+    <div class="fg">
+      <div class="fi"><label>Current Year</label><input type="number" id="curYear" value="2025" oninput="syncFY()"></div>
+      <div class="fi"><label>Last Planning Year</label><input type="number" id="lastYear" value="2024"></div>
+      <div class="fi"><label>Risk Score (1-10)</label><input type="number" id="riskScore" min="1" max="10" value="5"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ch"><span class="dot" style="background:var(--acc)"></span>Self</div>
+    <div class="fg">
+      <div class="fi">
+        <label>Full Name <span class="req">*</span></label>
+        <input type="text" id="selfName" placeholder="Enter your full name" oninput="chkName()" class="err">
+        <span class="rerr" id="nameErr" style="display:flex">Name is required</span>
+      </div>
+      <div class="fi"><label>Date of Birth <span class="req">*</span></label><input type="date" id="selfDob" value="1980-01-01" oninput="calcRY()"></div>
+      <div class="fi"><label>PAN</label><input type="text" id="selfPan" placeholder="ABCDE1234F"></div>
+      <div class="fi"><label>Retirement Age</label><input type="number" id="retAge" value="58" oninput="calcRY()"></div>
+      <div class="fi"><label>Retirement Year (auto)</label><input type="number" id="retYear" value="2038" readonly style="color:var(--grn)"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ch"><span class="dot" style="background:var(--amb)"></span>Spouse / Partner</div>
+    <div class="fg">
+      <div class="fi"><label>Name</label><input type="text" id="spName" placeholder="Spouse name"></div>
+      <div class="fi"><label>Date of Birth</label><input type="date" id="spDob"></div>
+      <div class="fi"><label>PAN</label><input type="text" id="spPan" placeholder="ABCDE1234F"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ch"><span class="dot" style="background:var(--grn)"></span>Children <button class="btn bgh bs" style="margin-left:auto" onclick="addChild()">+ Add Child</button></div>
+    <div id="no-child" class="muted">No children added.</div>
+    <div class="tw" id="child-wrap" style="display:none">
+      <table><thead><tr><th>#</th><th>Name</th><th>Date of Birth</th><th>Age</th><th>Gender</th><th>Edu Goal Yr</th><th>Marriage Yr</th><th>Comments</th><th></th></tr></thead>
+      <tbody id="childTb"></tbody></table>
+    </div>
+  </div>
+  <div class="ar">
+    <button class="btn bp" onclick="saveAbout()">Save and Next</button>
+    <span id="aerr" class="req" style="display:none;font-size:12px">Please enter your name first</span>
+  </div>
+</div>
+<!-- GOALS -->
+<div class="pg" id="pg-goals">
+  <div class="ph"><h1>Goals</h1><p>Life goals with inflation-adjusted future values</p></div>
+  <div class="card">
+    <div class="ch"><span class="dot" style="background:var(--gld)"></span>Goals <button class="btn bgh bs" style="margin-left:auto" onclick="addGoal()">+ Add Goal</button></div>
+    <div class="tw"><table><thead><tr><th>#</th><th>Goal</th><th>Today Cost</th><th>Target Year</th><th>Inflation%</th><th>Future Value</th><th>Comments</th><th></th></tr></thead>
+    <tbody id="goalTb"></tbody></table></div>
+  </div>
+  <div class="ar"><button class="btn bp" onclick="go('inflows')">Next</button></div>
+</div>
+<!-- INFLOWS -->
+<div class="pg" id="pg-inflows">
+  <div class="ph"><h1>Inflows</h1><p>Monthly and yearly income</p></div>
+  <div class="card">
+    <div class="ch"><span class="dot" style="background:var(--grn)"></span>Monthly Income <button class="btn bgh bs" style="margin-left:auto" onclick="addInflow()">+ Add</button></div>
+    <div class="tw"><table><thead><tr><th>#</th><th>Particulars</th><th>Self/mo</th><th>Spouse/mo</th><th>Total/mo</th><th>Annual</th><th>Increment%</th><th></th></tr></thead>
+    <tbody id="inflowTb"></tbody></table></div>
+  </div>
+  <div class="card">
+    <div class="ch"><span class="dot"></span>Yearly Inflows <button class="btn bgh bs" style="margin-left:auto" onclick="addYInflow()">+ Add</button></div>
+    <div class="tw"><table><thead><tr><th>#</th><th>Particulars</th><th>Amount</th><th>Year</th><th>Comments</th><th></th></tr></thead>
+    <tbody id="yinfTb"></tbody></table></div>
+  </div>
+  <div class="ar"><button class="btn bp" onclick="go('outflows')">Next</button></div>
+</div>
+<!-- OUTFLOWS -->
+<div class="pg" id="pg-outflows">
+  <div class="ph"><h1>Outflows</h1><p>Monthly expenses and investments</p></div>
+  <div class="card">
+    <div class="ch"><span class="dot" style="background:var(--red)"></span>Monthly Expenses <button class="btn bgh bs" style="margin-left:auto" onclick="addExp()">+ Add</button></div>
+    <div class="tw"><table><thead><tr><th>#</th><th>Particulars</th><th>Monthly</th><th>Inflation%</th><th>Comments</th><th></th></tr></thead>
+    <tbody id="expTb"></tbody></table></div>
+  </div>
+  <div class="card">
+    <div class="ch"><span class="dot" style="background:var(--acc)"></span>Investments <button class="btn bgh bs" style="margin-left:auto" onclick="addInv()">+ Add</button></div>
+    <div class="tw"><table><thead><tr><th>#</th><th>Particulars</th><th>Monthly</th><th>Return%</th><th>Comments</th><th></th></tr></thead>
+    <tbody id="invTb"></tbody></table></div>
+  </div>
+  <div class="ar"><button class="btn bp" onclick="go('assets')">Next</button></div>
+</div>
+<!-- ASSETS -->
+<div class="pg" id="pg-assets">
+  <div class="ph"><h1>Assets</h1><p>Lifestyle, investment and financial assets</p></div>
+  <div class="card">
+    <div class="ch"><span class="dot" style="background:var(--gld)"></span>Fixed Lifestyle Assets <button class="btn bgh bs" style="margin-left:auto" onclick="addAstFL()">+ Add</button></div>
+    <div class="tw"><table><thead><tr><th>#</th><th>Particulars</th><th>Value</th><th>Liability</th><th>Comments</th><th></th></tr></thead>
+    <tbody id="flTb"></tbody></table></div>
+  </div>
+  <div class="card">
+    <div class="ch"><span class="dot" style="background:var(--acc)"></span>Fixed Investment Assets <button class="btn bgh bs" style="margin-left:auto" onclick="addAstFI()">+ Add</button></div>
+    <div class="tw"><table><thead><tr><th>#</th><th>Particulars</th><th>Value</th><th>Liability</th><th>Growth%</th><th>Comments</th><th></th></tr></thead>
+    <tbody id="fiTb"></tbody></table></div>
+  </div>
+  <div class="card">
+    <div class="ch"><span class="dot" style="background:var(--grn)"></span>Financial Assets (MF/Stocks/FD) <button class="btn bgh bs" style="margin-left:auto" onclick="addFA()">+ Add</button></div>
+    <div class="tw"><table><thead><tr><th>#</th><th>Particulars</th><th>Value</th><th>Return%</th><th>Category</th><th>Comments</th><th></th></tr></thead>
+    <tbody id="faTb"></tbody></table></div>
+  </div>
+  <div class="ar"><button class="btn bp" onclick="go('loans')">Next</button></div>
+</div>
+<!-- LOANS -->
+<div class="pg" id="pg-loans">
+  <div class="ph"><h1>Loan Details</h1><p>All liabilities and outstanding amounts</p></div>
+  <div class="card">
+    <div class="ch"><span class="dot" style="background:var(--red)"></span>Liabilities <button class="btn bgh bs" style="margin-left:auto" onclick="addLoan()">+ Add</button></div>
+    <div class="tw"><table><thead><tr><th>#</th><th>Particulars</th><th>Lender</th><th>Start</th><th>End</th><th>EMI/mo</th><th>Rate%</th><th>Outstanding</th><th></th></tr></thead>
+    <tbody id="loanTb"></tbody></table></div>
+  </div>
+  <div class="ar"><button class="btn bp" onclick="go('insurance')">Next</button></div>
+</div>
+<!-- INSURANCE -->
+<div class="pg" id="pg-insurance">
+  <div class="ph"><h1>Insurance</h1><p>Life, health and investment policies</p></div>
+  <div class="card">
+    <div class="ch"><span class="dot" style="background:var(--grn)"></span>Policies <button class="btn bgh bs" style="margin-left:auto" onclick="addIns()">+ Add</button></div>
+    <div class="tw"><table><thead><tr><th>#</th><th>Plan Name</th><th>Type</th><th>Insured</th><th>Sum Assured</th><th>Annual Premium</th><th>Start</th><th>End</th><th>Maturity</th><th></th></tr></thead>
+    <tbody id="insTb"></tbody></table></div>
+  </div>
+  <div class="ar"><button class="btn bp" onclick="go('cashflow')">View Cash Flow</button></div>
+</div>
+<!-- CASHFLOW -->
+<div class="pg" id="pg-cashflow">
+  <div class="ph"><h1>Cash Flow Summary</h1><p>Year-by-year projection to retirement</p></div>
+  <div class="kgrid" style="grid-template-columns:repeat(3,1fr)">
+    <div class="kpi"><div class="kl">Annual Inflow</div><div class="kv" id="cf-in">0</div></div>
+    <div class="kpi r"><div class="kl">Annual Outflow</div><div class="kv" id="cf-out">0</div></div>
+    <div class="kpi g"><div class="kl">Annual Surplus</div><div class="kv" id="cf-sur">0</div></div>
+  </div>
+  <div class="card"><div class="ch"><span class="dot"></span>Projections</div>
+    <div class="tw"><table><thead><tr><th>Year</th><th>Opening</th><th>Inflow</th><th>Outflow</th><th>Surplus</th><th>Growth</th><th>Closing</th><th>Status</th></tr></thead>
+    <tbody id="cfTb"></tbody></table></div>
+  </div>
+</div>
+<!-- RETIRE -->
+<div class="pg" id="pg-retire">
+  <div class="ph"><h1>Post Retirement</h1><p>Projected finances after retirement</p></div>
+  <div class="card"><div class="ch"><span class="dot" style="background:var(--gld)"></span>Assumptions</div>
+    <div class="fg">
+      <div class="fi"><label>Corpus at Retirement</label><input type="number" id="rCorpus" value="0" oninput="calcRet()"></div>
+      <div class="fi"><label>Monthly Expenses</label><input type="number" id="rExp" value="0" oninput="calcRet()"></div>
+      <div class="fi"><label>Monthly Rental Income</label><input type="number" id="rRent" value="0" oninput="calcRet()"></div>
+      <div class="fi"><label>Portfolio Return % pa</label><input type="number" id="rRet" value="7" step="0.1" oninput="calcRet()"></div>
+      <div class="fi"><label>Inflation % pa</label><input type="number" id="rInf" value="6" step="0.1" oninput="calcRet()"></div>
+      <div class="fi"><label>Life Expectancy (Age)</label><input type="number" id="rLife" value="85" oninput="calcRet()"></div>
+    </div>
+  </div>
+  <div class="card"><div class="ch"><span class="dot"></span>Year-by-Year</div>
+    <div class="tw"><table><thead><tr><th>Year</th><th>Age</th><th>Opening</th><th>Rent</th><th>Expenses</th><th>Surplus</th><th>Growth</th><th>Closing</th></tr></thead>
+    <tbody id="retTb"></tbody></table></div>
+  </div>
+</div>
+<!-- PORTFOLIO -->
+<div class="pg" id="pg-portfolio">
+  <div class="ph"><h1>Portfolio Analysis</h1><p>Asset allocation breakdown</p></div>
+  <div class="kgrid">
+    <div class="kpi"><div class="kl">Equity</div><div class="kv" id="pf-eq">0</div><div class="ks" id="pf-eqp">0%</div></div>
+    <div class="kpi o"><div class="kl">Hybrid</div><div class="kv" id="pf-hy">0</div><div class="ks" id="pf-hyp">0%</div></div>
+    <div class="kpi g"><div class="kl">Debt</div><div class="kv" id="pf-dt">0</div><div class="ks" id="pf-dtp">0%</div></div>
+    <div class="kpi r"><div class="kl">Others</div><div class="kv" id="pf-ot">0</div><div class="ks" id="pf-otp">0%</div></div>
+  </div>
+  <div class="card"><div class="ch"><span class="dot"></span>Allocation</div><div id="pfbars"></div></div>
+  <div class="card"><div class="ch"><span class="dot" style="background:var(--grn)"></span>Detail</div>
+    <div class="tw"><table><thead><tr><th>Particulars</th><th>Value</th><th>Category</th><th>Return%</th></tr></thead>
+    <tbody id="pfTb"></tbody></table></div>
+  </div>
+</div>
+</main>
+</div>
+<script>
+var S = {
+  fy: 2025,
+  about: {curYear:2025,lastYear:2024,riskScore:5,selfName:'',selfDob:'1980-01-01',selfPan:'',retAge:58,retYear:2038,spName:'',spDob:'',spPan:''},
+  children: [],
+  goals: [{name:'Retirement',cost:0,yr:2038,inf:6,comments:''},{name:'Child Education',cost:0,yr:2032,inf:8,comments:''},{name:'Marriage',cost:0,yr:2035,inf:7,comments:''}],
+  inflows: [{p:'Salary',self:0,sp:0,inc:0},{p:'Business Income',self:0,sp:0,inc:0},{p:'Other Income',self:0,sp:0,inc:0},{p:'Rent',self:0,sp:0,inc:0}],
+  yinflows: [],
+  expenses: [{p:'Household',amt:0,inf:6,c:''},{p:'PF/EPF',amt:0,inf:0,c:''}],
+  investments: [{p:'SIP/MF',amt:0,ret:12,c:''},{p:'PPF',amt:0,ret:7.1,c:''}],
+  flAssets: [], fiAssets: [],
+  faAssets: [{p:'',val:0,ret:12,cat:'Equity',c:''}],
+  loans: [], insurance: [],
+  retire: {corpus:0,exp:0,rent:0,ret:7,inf:6,life:85}
+};
+var R = function(n){ return 'Rs '+Math.round(n||0).toLocaleString('en-IN'); };
+var N = function(v){ return parseFloat(v)||0; };
+var IV = function(v){ return parseInt(v)||0; };
+function totals(){
+  var mIn=S.inflows.reduce(function(s,r){return s+N(r.self)+N(r.sp);},0);
+  var mExp=S.expenses.reduce(function(s,r){return s+N(r.amt);},0);
+  var mInv=S.investments.reduce(function(s,r){return s+N(r.amt);},0);
+  var mEMI=S.loans.reduce(function(s,r){return s+N(r.emi);},0);
+  var mOut=mExp+mInv+mEMI;
+  return {mIn:mIn,mExp:mExp,mInv:mInv,mEMI:mEMI,mOut:mOut,sur:mIn-mOut};
+}
+function cAge(dob){
+  if(!dob) return '--';
+  var b=new Date(dob),now=new Date();
+  var a=now.getFullYear()-b.getFullYear()-(now<new Date(now.getFullYear(),b.getMonth(),b.getDate())?1:0);
+  return a>=0?a:'--';
+}
+function go(id){
+  document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
+  document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('on');});
+  document.getElementById('pg-'+id).classList.add('on');
+  document.getElementById('n-'+id).classList.add('on');
+  if(id==='dash') updDash();
+  if(id==='cashflow') rendCF();
+  if(id==='retire') calcRet();
+  if(id==='portfolio') rendPF();
+}
+function onFY(){
+  var fy=IV(document.getElementById('fysel').value);
+  S.fy=fy; S.about.curYear=fy;
+  var cy=document.getElementById('curYear'); if(cy) cy.value=fy;
+  calcRY(); rendGoals();
+}
+function syncFY(){
+  var v=IV(document.getElementById('curYear').value)||2025;
+  S.about.curYear=v;
+  var sel=document.getElementById('fysel');
+  if(sel){var opts=Array.from(sel.options).find(function(x){return x.value==v;}); if(opts) sel.value=v;}
+}
+function calcRY(){
+  var dob=document.getElementById('selfDob').value||'1980-01-01';
+  var age=IV(document.getElementById('retAge').value)||58;
+  var ry=new Date(dob).getFullYear()+age;
+  document.getElementById('retYear').value=ry;
+  S.about.retYear=ry;
+}
+function chkName(){
+  var el=document.getElementById('selfName');
+  var err=document.getElementById('nameErr');
+  if(el.value.trim()){el.classList.remove('err');err.style.display='none';return true;}
+  el.classList.add('err');err.style.display='flex';return false;
+}
+function saveAbout(){
+  if(!chkName()){document.getElementById('aerr').style.display='inline';document.getElementById('selfName').focus();return;}
+  document.getElementById('aerr').style.display='none';
+  S.about.selfName=document.getElementById('selfName').value.trim();
+  S.about.curYear=IV(document.getElementById('curYear').value)||2025;
+  go('goals');
+}
+function addChild(){
+  S.children.push({name:'',dob:'',gender:'Male',eduYr:S.about.curYear+18,marYr:S.about.curYear+25,c:''});
+  rendChildren();
+}
+function rendChildren(){
+  var tb=document.getElementById('childTb');
+  var wrap=document.getElementById('child-wrap');
+  var msg=document.getElementById('no-child');
+  if(!S.children.length){wrap.style.display='none';msg.style.display='block';return;}
+  wrap.style.display='block';msg.style.display='none';
+  tb.innerHTML=S.children.map(function(c,i){
+    return '<tr><td>'+(i+1)+'</td><td><input value="'+c.name+'" placeholder="Name" oninput="S.children['+i+'].name=this.value"></td>'
+    +'<td><input type="date" value="'+c.dob+'" oninput="S.children['+i+'].dob=this.value;rendChildren()"></td>'
+    +'<td style="text-align:center;font-family:monospace;color:var(--grn)">'+cAge(c.dob)+'</td>'
+    +'<td><select oninput="S.children['+i+'].gender=this.value" style="width:90px"><option'+(c.gender==='Male'?' selected':'')+'>Male</option><option'+(c.gender==='Female'?' selected':'')+'>Female</option><option'+(c.gender==='Other'?' selected':'')+'>Other</option></select></td>'
+    +'<td><input type="number" value="'+c.eduYr+'" oninput="S.children['+i+'].eduYr=IV(this.value)" style="width:75px"></td>'
+    +'<td><input type="number" value="'+c.marYr+'" oninput="S.children['+i+'].marYr=IV(this.value)" style="width:75px"></td>'
+    +'<td><input value="'+c.c+'" oninput="S.children['+i+'].c=this.value"></td>'
+    +'<td><button class="btn bd bs" onclick="S.children.splice('+i+',1);rendChildren()">X</button></td></tr>';
+  }).join('');
+}
+function addGoal(){S.goals.push({name:'New Goal',cost:0,yr:2030,inf:6,comments:''});rendGoals();}
+function rendGoals(){
+  var cur=S.about.curYear||S.fy||2025;
+  document.getElementById('goalTb').innerHTML=S.goals.map(function(g,i){
+    var p=Math.max((IV(g.yr)||cur)-cur,0);
+    var fv=Math.round(N(g.cost)*Math.pow(1+N(g.inf)/100,p));
+    g._fv=fv;
+    return '<tr><td>'+(i+1)+'</td>'
+    +'<td><input value="'+g.name+'" oninput="S.goals['+i+'].name=this.value" style="min-width:120px"></td>'
+    +'<td><input type="number" value="'+g.cost+'" oninput="S.goals['+i+'].cost=N(this.value);rendGoals()"></td>'
+    +'<td><input type="number" value="'+g.yr+'" oninput="S.goals['+i+'].yr=IV(this.value);rendGoals()" style="width:75px"></td>'
+    +'<td><input type="number" value="'+g.inf+'" oninput="S.goals['+i+'].inf=N(this.value);rendGoals()" style="width:60px"></td>'
+    +'<td class="tc">'+R(fv)+'</td>'
+    +'<td><input value="'+g.comments+'" oninput="S.goals['+i+'].comments=this.value"></td>'
+    +'<td><button class="btn bd bs" onclick="S.goals.splice('+i+',1);rendGoals()">X</button></td></tr>';
+  }).join('');
+}
+function addInflow(){S.inflows.push({p:'',self:0,sp:0,inc:0});rendInflows();}
+function rendInflows(){
+  var t=totals();
+  var rows=S.inflows.map(function(r,i){
+    var tot=N(r.self)+N(r.sp);
+    return '<tr><td>'+(i+1)+'</td>'
+    +'<td><input value="'+r.p+'" oninput="S.inflows['+i+'].p=this.value" style="min-width:120px"></td>'
+    +'<td><input type="number" value="'+r.self+'" oninput="S.inflows['+i+'].self=N(this.value);rendInflows()"></td>'
+    +'<td><input type="number" value="'+r.sp+'" oninput="S.inflows['+i+'].sp=N(this.value);rendInflows()"></td>'
+    +'<td class="tc">'+R(tot)+'</td><td class="tc">'+R(tot*12)+'</td>'
+    +'<td><input type="number" value="'+r.inc+'" oninput="S.inflows['+i+'].inc=N(this.value)" style="width:60px"></td>'
+    +'<td><button class="btn bd bs" onclick="S.inflows.splice('+i+',1);rendInflows()">X</button></td></tr>';
+  });
+  rows.push('<tr class="tt"><td></td><td>TOTAL</td><td></td><td></td><td class="tc">'+R(t.mIn)+'</td><td class="tc">'+R(t.mIn*12)+'</td><td></td><td></td></tr>');
+  document.getElementById('inflowTb').innerHTML=rows.join('');
+}
+function addYInflow(){S.yinflows.push({p:'',amt:0,yr:S.about.curYear||2025,c:''});rendYInflows();}
+function rendYInflows(){
+  document.getElementById('yinfTb').innerHTML=S.yinflows.map(function(r,i){
+    return '<tr><td>'+(i+1)+'</td>'
+    +'<td><input value="'+r.p+'" oninput="S.yinflows['+i+'].p=this.value" style="min-width:120px"></td>'
+    +'<td><input type="number" value="'+r.amt+'" oninput="S.yinflows['+i+'].amt=N(this.value)"></td>'
+    +'<td><input type="number" value="'+r.yr+'" oninput="S.yinflows['+i+'].yr=IV(this.value)" style="width:75px"></td>'
+    +'<td><input value="'+r.c+'" oninput="S.yinflows['+i+'].c=this.value"></td>'
+    +'<td><button class="btn bd bs" onclick="S.yinflows.splice('+i+',1);rendYInflows()">X</button></td></tr>';
+  }).join('')||'<tr><td colspan="6" class="muted" style="padding:10px;text-align:center">None</td></tr>';
+}
+function addExp(){S.expenses.push({p:'',amt:0,inf:6,c:''});rendExp();}
+function rendExp(){
+  var rows=S.expenses.map(function(r,i){
+    return '<tr><td>'+(i+1)+'</td>'
+    +'<td><input value="'+r.p+'" oninput="S.expenses['+i+'].p=this.value" style="min-width:120px"></td>'
+    +'<td><input type="number" value="'+r.amt+'" oninput="S.expenses['+i+'].amt=N(this.value);rendExp()"></td>'
+    +'<td><input type="number" value="'+r.inf+'" oninput="S.expenses['+i+'].inf=N(this.value)" style="width:60px"></td>'
+    +'<td><input value="'+r.c+'" oninput="S.expenses['+i+'].c=this.value"></td>'
+    +'<td><button class="btn bd bs" onclick="S.expenses.splice('+i+',1);rendExp()">X</button></td></tr>';
+  });
+  rows.push('<tr class="tt"><td></td><td>TOTAL</td><td class="tc">'+R(S.expenses.reduce(function(s,r){return s+N(r.amt);},0))+'</td><td></td><td></td><td></td></tr>');
+  document.getElementById('expTb').innerHTML=rows.join('');
+}
+function addInv(){S.investments.push({p:'',amt:0,ret:12,c:''});rendInv();}
+function rendInv(){
+  var rows=S.investments.map(function(r,i){
+    return '<tr><td>'+(i+1)+'</td>'
+    +'<td><input value="'+r.p+'" oninput="S.investments['+i+'].p=this.value" style="min-width:120px"></td>'
+    +'<td><input type="number" value="'+r.amt+'" oninput="S.investments['+i+'].amt=N(this.value);rendInv()"></td>'
+    +'<td><input type="number" value="'+r.ret+'" oninput="S.investments['+i+'].ret=N(this.value)" style="width:60px"></td>'
+    +'<td><input value="'+r.c+'" oninput="S.investments['+i+'].c=this.value"></td>'
+    +'<td><button class="btn bd bs" onclick="S.investments.splice('+i+',1);rendInv()">X</button></td></tr>';
+  });
+  rows.push('<tr class="tt"><td></td><td>TOTAL</td><td class="tc">'+R(S.investments.reduce(function(s,r){return s+N(r.amt);},0))+'</td><td></td><td></td><td></td></tr>');
+  document.getElementById('invTb').innerHTML=rows.join('');
+}
+function addAstFL(){S.flAssets.push({p:'',val:0,lib:0,c:''});rendAsts();}
+function addAstFI(){S.fiAssets.push({p:'',val:0,lib:0,growth:6,c:''});rendAsts();}
+function rendAsts(){
+  document.getElementById('flTb').innerHTML=S.flAssets.map(function(r,i){
+    return '<tr><td>'+(i+1)+'</td><td><input value="'+r.p+'" oninput="S.flAssets['+i+'].p=this.value" style="min-width:110px"></td>'
+    +'<td><input type="number" value="'+r.val+'" oninput="S.flAssets['+i+'].val=N(this.value)"></td>'
+    +'<td><input type="number" value="'+r.lib+'" oninput="S.flAssets['+i+'].lib=N(this.value)"></td>'
+    +'<td><input value="'+r.c+'" oninput="S.flAssets['+i+'].c=this.value"></td>'
+    +'<td><button class="btn bd bs" onclick="S.flAssets.splice('+i+',1);rendAsts()">X</button></td></tr>';
+  }).join('')||'<tr><td colspan="6" class="muted" style="padding:10px;text-align:center">None</td></tr>';
+  document.getElementById('fiTb').innerHTML=S.fiAssets.map(function(r,i){
+    return '<tr><td>'+(i+1)+'</td><td><input value="'+r.p+'" oninput="S.fiAssets['+i+'].p=this.value" style="min-width:110px"></td>'
+    +'<td><input type="number" value="'+r.val+'" oninput="S.fiAssets['+i+'].val=N(this.value)"></td>'
+    +'<td><input type="number" value="'+r.lib+'" oninput="S.fiAssets['+i+'].lib=N(this.value)"></td>'
+    +'<td><input type="number" value="'+r.growth+'" oninput="S.fiAssets['+i+'].growth=N(this.value)" style="width:65px"></td>'
+    +'<td><input value="'+r.c+'" oninput="S.fiAssets['+i+'].c=this.value"></td>'
+    +'<td><button class="btn bd bs" onclick="S.fiAssets.splice('+i+',1);rendAsts()">X</button></td></tr>';
+  }).join('')||'<tr><td colspan="7" class="muted" style="padding:10px;text-align:center">None</td></tr>';
+}
+function addFA(){S.faAssets.push({p:'',val:0,ret:12,cat:'Equity',c:''});rendFA();}
+function rendFA(){
+  var rows=S.faAssets.map(function(r,i){
+    return '<tr><td>'+(i+1)+'</td>'
+    +'<td><input value="'+r.p+'" oninput="S.faAssets['+i+'].p=this.value" style="min-width:120px"></td>'
+    +'<td><input type="number" value="'+r.val+'" oninput="S.faAssets['+i+'].val=N(this.value);rendFA()"></td>'
+    +'<td><input type="number" value="'+r.ret+'" oninput="S.faAssets['+i+'].ret=N(this.value)" style="width:65px"></td>'
+    +'<td><select oninput="S.faAssets['+i+'].cat=this.value">'
+    +'<option'+(r.cat==='Equity'?' selected':'')+'>Equity</option>'
+    +'<option'+(r.cat==='Hybrid'?' selected':'')+'>Hybrid</option>'
+    +'<option'+(r.cat==='Debt'?' selected':'')+'>Debt</option>'
+    +'<option'+(r.cat==='Others'?' selected':'')+'>Others</option>'
+    +'</select></td>'
+    +'<td><input value="'+r.c+'" oninput="S.faAssets['+i+'].c=this.value"></td>'
+    +'<td><button class="btn bd bs" onclick="S.faAssets.splice('+i+',1);rendFA()">X</button></td></tr>';
+  });
+  rows.push('<tr class="tt"><td></td><td>TOTAL</td><td class="tc">'+R(S.faAssets.reduce(function(s,r){return s+N(r.val);},0))+'</td><td></td><td></td><td></td><td></td></tr>');
+  document.getElementById('faTb').innerHTML=rows.join('');
+}
+function addLoan(){S.loans.push({p:'',lender:'',syr:2020,eyr:2030,emi:0,rate:8.5,out:0});rendLoans();}
+function rendLoans(){
+  var rows=S.loans.map(function(r,i){
+    return '<tr><td>'+(i+1)+'</td>'
+    +'<td><input value="'+r.p+'" oninput="S.loans['+i+'].p=this.value" style="min-width:100px"></td>'
+    +'<td><input value="'+r.lender+'" oninput="S.loans['+i+'].lender=this.value" style="width:90px"></td>'
+    +'<td><input type="number" value="'+r.syr+'" oninput="S.loans['+i+'].syr=IV(this.value)" style="width:65px"></td>'
+    +'<td><input type="number" value="'+r.eyr+'" oninput="S.loans['+i+'].eyr=IV(this.value)" style="width:65px"></td>'
+    +'<td><input type="number" value="'+r.emi+'" oninput="S.loans['+i+'].emi=N(this.value);rendLoans()"></td>'
+    +'<td><input type="number" value="'+r.rate+'" oninput="S.loans['+i+'].rate=N(this.value)" style="width:60px"></td>'
+    +'<td><input type="number" value="'+r.out+'" oninput="S.loans['+i+'].out=N(this.value);rendLoans()"></td>'
+    +'<td><button class="btn bd bs" onclick="S.loans.splice('+i+',1);rendLoans()">X</button></td></tr>';
+  });
+  var t=totals();
+  rows.push('<tr class="tt"><td></td><td>TOTAL</td><td></td><td></td><td></td><td class="tc">'+R(t.mEMI)+'</td><td></td><td class="tc">'+R(S.loans.reduce(function(s,r){return s+N(r.out);},0))+'</td><td></td></tr>');
+  document.getElementById('loanTb').innerHTML=rows.join('');
+}
+function addIns(){S.insurance.push({name:'',type:'Term',insured:'Self',sa:0,prem:0,syr:2024,eyr:2034,mat:0});rendIns();}
+function rendIns(){
+  var rows=S.insurance.map(function(r,i){
+    return '<tr><td>'+(i+1)+'</td>'
+    +'<td><input value="'+r.name+'" oninput="S.insurance['+i+'].name=this.value" style="min-width:110px"></td>'
+    +'<td><select oninput="S.insurance['+i+'].type=this.value" style="width:90px">'
+    +'<option'+(r.type==='Term'?' selected':'')+'>Term</option>'
+    +'<option'+(r.type==='ULIP'?' selected':'')+'>ULIP</option>'
+    +'<option'+(r.type==='Endowment'?' selected':'')+'>Endowment</option>'
+    +'<option'+(r.type==='Health'?' selected':'')+'>Health</option>'
+    +'<option'+(r.type==='Pension'?' selected':'')+'>Pension</option>'
+    +'<option'+(r.type==='Others'?' selected':'')+'>Others</option>'
+    +'</select></td>'
+    +'<td><input value="'+r.insured+'" oninput="S.insurance['+i+'].insured=this.value" style="width:80px"></td>'
+    +'<td><input type="number" value="'+r.sa+'" oninput="S.insurance['+i+'].sa=N(this.value)"></td>'
+    +'<td><input type="number" value="'+r.prem+'" oninput="S.insurance['+i+'].prem=N(this.value);rendIns()"></td>'
+    +'<td><input type="number" value="'+r.syr+'" oninput="S.insurance['+i+'].syr=IV(this.value)" style="width:65px"></td>'
+    +'<td><input type="number" value="'+r.eyr+'" oninput="S.insurance['+i+'].eyr=IV(this.value)" style="width:65px"></td>'
+    +'<td><input type="number" value="'+r.mat+'" oninput="S.insurance['+i+'].mat=N(this.value)"></td>'
+    +'<td><button class="btn bd bs" onclick="S.insurance.splice('+i+',1);rendIns()">X</button></td></tr>';
+  });
+  var tP=S.insurance.reduce(function(s,r){return s+N(r.prem);},0);
+  if(S.insurance.length) rows.push('<tr class="tt"><td></td><td>TOTAL ANNUAL</td><td></td><td></td><td></td><td class="tc">'+R(tP)+'</td><td></td><td></td><td></td><td></td></tr>');
+  document.getElementById('insTb').innerHTML=rows.join('')||'<tr><td colspan="10" class="muted" style="padding:10px;text-align:center">No policies</td></tr>';
+}
+function rendCF(){
+  var t=totals();
+  document.getElementById('cf-in').textContent=R(t.mIn*12);
+  document.getElementById('cf-out').textContent=R(t.mOut*12);
+  document.getElementById('cf-sur').textContent=R(t.sur*12);
+  var cur=S.about.curYear||S.fy||2025;
+  var retYr=IV(document.getElementById('retYear').value)||2038;
+  var avgRet=S.faAssets.length?S.faAssets.reduce(function(s,r){return s+N(r.ret);},0)/S.faAssets.length:7;
+  var open=0, rows=[];
+  for(var y=0;y<Math.min(retYr-cur,40);y++){
+    var yr=cur+y;
+    var inf=t.mIn*12*Math.pow(1.08,y);
+    var outf=t.mOut*12*Math.pow(1.06,y);
+    var sur=inf-outf;
+    var grw=open*(avgRet/100);
+    var close=open+sur+grw;
+    var ok=close>=0;
+    rows.push('<tr><td>'+yr+'</td>'
+    +'<td class="tn">'+R(open)+'</td>'
+    +'<td class="tn" style="color:var(--grn)">'+R(inf)+'</td>'
+    +'<td class="tn" style="color:var(--red)">'+R(outf)+'</td>'
+    +'<td class="tn" style="color:'+(sur>=0?'var(--grn)':'var(--red)')+'">'+R(sur)+'</td>'
+    +'<td class="tn" style="color:var(--acc)">'+R(grw)+'</td>'
+    +'<td class="tn" style="color:'+(ok?'var(--grn)':'var(--red)')+';font-weight:700">'+R(close)+'</td>'
+    +'<td><span class="tag '+(ok?'tg':'tr2')+'">'+( ok?'Surplus':'Deficit')+'</span></td></tr>');
+    open=close;
+  }
+  document.getElementById('cfTb').innerHTML=rows.join('')||'<tr><td colspan="8" class="muted" style="padding:14px;text-align:center">Enter income and expense data first</td></tr>';
+}
+function calcRet(){
+  var corpus=N(document.getElementById('rCorpus').value);
+  var exp=N(document.getElementById('rExp').value);
+  var rent=N(document.getElementById('rRent').value);
+  var ret=N(document.getElementById('rRet').value)/100;
+  var inf=N(document.getElementById('rInf').value)/100;
+  var life=IV(document.getElementById('rLife').value)||85;
+  var retYr=IV(document.getElementById('retYear').value)||2038;
+  var retAge=IV(document.getElementById('retAge').value)||58;
+  var open=corpus, rows=[];
+  for(var y=0;y<life-retAge;y++){
+    var rentY=rent*12*Math.pow(1.04,y);
+    var expY=exp*12*Math.pow(1+inf,y);
+    var sur=rentY-expY;
+    var grw=open*ret;
+    var close=open+sur+grw;
+    var ok=close>=0;
+    rows.push('<tr><td>'+(retYr+y)+'</td><td>'+(retAge+y)+'</td>'
+    +'<td class="tn">'+R(open)+'</td>'
+    +'<td class="tn" style="color:var(--grn)">'+R(rentY)+'</td>'
+    +'<td class="tn" style="color:var(--red)">'+R(expY)+'</td>'
+    +'<td class="tn" style="color:'+(sur>=0?'var(--grn)':'var(--red)')+'">'+R(sur)+'</td>'
+    +'<td class="tn" style="color:var(--acc)">'+R(grw)+'</td>'
+    +'<td class="tn" style="color:'+(ok?'var(--grn)':'var(--red)')+';font-weight:700">'+R(close)+'</td></tr>');
+    open=close;
+    if(close<0&&y>2) break;
+  }
+  document.getElementById('retTb').innerHTML=rows.join('')||'<tr><td colspan="8" class="muted" style="padding:14px;text-align:center">Enter corpus and expenses above</td></tr>';
+}
+function rendPF(){
+  var cats={Equity:0,Hybrid:0,Debt:0,Others:0};
+  S.faAssets.forEach(function(r){var c=r.cat||'Others';cats[c]=(cats[c]||0)+N(r.val);});
+  var tot=Object.values(cats).reduce(function(a,b){return a+b;},0)||1;
+  var clrs={Equity:'var(--acc)',Hybrid:'var(--gld)',Debt:'var(--grn)',Others:'var(--mut)'};
+  document.getElementById('pf-eq').textContent=R(cats.Equity);document.getElementById('pf-eqp').textContent=(cats.Equity/tot*100).toFixed(1)+'%';
+  document.getElementById('pf-hy').textContent=R(cats.Hybrid);document.getElementById('pf-hyp').textContent=(cats.Hybrid/tot*100).toFixed(1)+'%';
+  document.getElementById('pf-dt').textContent=R(cats.Debt);document.getElementById('pf-dtp').textContent=(cats.Debt/tot*100).toFixed(1)+'%';
+  document.getElementById('pf-ot').textContent=R(cats.Others);document.getElementById('pf-otp').textContent=(cats.Others/tot*100).toFixed(1)+'%';
+  document.getElementById('pfbars').innerHTML=Object.keys(cats).map(function(cat){
+    var val=cats[cat];
+    return '<div class="prow"><div class="plbl"><span>'+cat+'</span><span style="font-family:monospace">'+R(val)+' - '+(val/tot*100).toFixed(1)+'%</span></div>'
+    +'<div class="ptrk"><div class="pfil" style="width:'+(val/tot*100)+'%;background:'+clrs[cat]+'"></div></div></div>';
+  }).join('');
+  document.getElementById('pfTb').innerHTML=S.faAssets.filter(function(r){return r.p||r.val;}).map(function(r){
+    return '<tr><td>'+r.p+'</td><td class="tn">'+R(r.val)+'</td><td><span class="tag tb">'+r.cat+'</span></td><td class="tn">'+N(r.ret).toFixed(1)+'%</td></tr>';
+  }).join('')||'<tr><td colspan="4" class="muted" style="padding:10px;text-align:center">No financial assets</td></tr>';
+}
+function updDash(){
+  var t=totals();
+  document.getElementById('k-in').textContent=R(t.mIn);
+  document.getElementById('k-out').textContent=R(t.mOut);
+  document.getElementById('k-sur').textContent=R(t.sur);
+  var tA=S.faAssets.reduce(function(s,r){return s+N(r.val);},0)+S.flAssets.reduce(function(s,r){return s+N(r.val);},0)+S.fiAssets.reduce(function(s,r){return s+N(r.val);},0);
+  var tL=S.loans.reduce(function(s,r){return s+N(r.out);},0);
+  document.getElementById('k-ast').textContent=R(tA);
+  document.getElementById('k-lib').textContent=R(tL);
+  document.getElementById('k-nw').textContent=R(tA-tL);
+  var mx=Math.max(t.mIn,t.mOut,Math.abs(t.sur))||1;
+  document.getElementById('bi').style.width=(t.mIn/mx*100)+'%';
+  document.getElementById('bo').style.width=(t.mOut/mx*100)+'%';
+  document.getElementById('bs2').style.width=(Math.abs(t.sur)/mx*100)+'%';
+  document.getElementById('bvi').textContent=R(t.mIn);
+  document.getElementById('bvo').textContent=R(t.mOut);
+  document.getElementById('bvs').textContent=R(t.sur);
+  var sn=document.getElementById('selfName').value||S.about.selfName||'';
+  var sp=document.getElementById('spName').value||'';
+  var fam='<div style="display:flex;flex-wrap:wrap;gap:8px">';
+  fam+='<div style="background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;padding:9px 14px;display:flex;gap:7px;align-items:center"><span>Person</span><div><div style="font-size:12px;font-weight:700">'+(sn||'Self (name not set)')+'</div><div class="muted" style="font-size:10px">Primary</div></div></div>';
+  if(sp) fam+='<div style="background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;padding:9px 14px;display:flex;gap:7px;align-items:center"><span>Person</span><div><div style="font-size:12px;font-weight:700">'+sp+'</div><div class="muted" style="font-size:10px">Spouse</div></div></div>';
+  S.children.forEach(function(c){ fam+='<div style="background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;padding:9px 14px;display:flex;gap:7px;align-items:center"><span>Child</span><div><div style="font-size:12px;font-weight:700">'+(c.name||'Child')+'</div><div class="muted" style="font-size:10px">Age '+cAge(c.dob)+' - '+c.gender+'</div></div></div>'; });
+  fam+='</div>';
+  document.getElementById('d-fam').innerHTML=fam;
+  var cur=S.about.curYear||2025;
+  if(S.goals.length){
+    document.getElementById('d-goals').innerHTML=S.goals.slice(0,5).map(function(g){
+      var yrs=Math.max((IV(g.yr)||cur)-cur,0);
+      var pct=yrs>0?Math.max(0,100-yrs*3):100;
+      return '<div class="prow"><div class="plbl"><span>'+g.name+'</span><span style="font-family:monospace">'+R(g._fv||g.cost)+' - '+g.yr+'</span></div><div class="ptrk"><div class="pfil" style="width:'+pct+'%"></div></div></div>';
+    }).join('');
+  }
+  document.getElementById('d-ins').innerHTML=S.insurance.length?S.insurance.map(function(r){return '<span class="tag tb" style="margin:2px">'+(r.name||'Policy')+' - '+r.type+'</span>';}).join(''):'<div class="muted">No policies.</div>';
+}
+function saveLocal(){
+  try{localStorage.setItem('fp_data',JSON.stringify(S));alert('Saved!');}
+  catch(e){alert('Could not save: '+e.message);}
+}
+function doExport(){
+  var nm=(document.getElementById('selfName').value||S.about.selfName||'').trim();
+  if(!nm){
+    alert('Please enter your name in About You before exporting.');
+    go('about');
+    var el=document.getElementById('selfName');
+    el.focus();el.classList.add('err');
+    document.getElementById('nameErr').style.display='flex';
+    return;
+  }
+  var btn=document.getElementById('expbtn');
+  btn.textContent='Building...';btn.disabled=true;
+  setTimeout(function(){
+    try{buildExcel(nm);}
+    catch(e){alert('Export failed: '+e.message);console.error(e);}
+    finally{btn.textContent='Export Excel';btn.disabled=false;}
+  },100);
+}
+function buildExcel(selfName){
+  if(typeof XLSX==='undefined'){alert('Excel library not loaded. Please check your internet connection.');return;}
+  var wb=XLSX.utils.book_new();
+  var fy=S.fy||2025;
+  var cur=S.about.curYear||fy;
+  var retYr=S.about.retYear||IV(document.getElementById('retYear').value)||2038;
+  var t=totals();
+  var avgRet=S.faAssets.length?S.faAssets.reduce(function(s,r){return s+N(r.ret);},0)/S.faAssets.length:7;
+  function makeWS(data){var w=XLSX.utils.aoa_to_sheet(data);w['!cols']=Array(12).fill({wch:22});return w;}
+  // About You
+  var aboutData=[
+    ['FINPLAN PRO - ABOUT YOU'],
+    ['Financial Year',fy+'-'+(fy+1),'Current Year',cur,'Risk Score',S.about.riskScore||5],
+    [],['SELF'],
+    ['Name','Date of Birth','PAN','Retirement Age','Retirement Year'],
+    [selfName,document.getElementById('selfDob').value||'',document.getElementById('selfPan').value||'',S.about.retAge||58,retYr],
+    [],['SPOUSE'],
+    ['Name','Date of Birth','PAN'],
+    [document.getElementById('spName').value||'',document.getElementById('spDob').value||'',document.getElementById('spPan').value||''],
+    [],['CHILDREN'],
+    ['No','Name','Date of Birth','Age','Gender','Education Year','Marriage Year','Comments']
+  ];
+  if(S.children.length){S.children.forEach(function(c,i){aboutData.push([i+1,c.name,c.dob,cAge(c.dob),c.gender,c.eduYr,c.marYr,c.c]);});}
+  else{aboutData.push(['--','No children added','','','','','','']);}
+  XLSX.utils.book_append_sheet(wb,makeWS(aboutData),'About You');
+  // Goals
+  var goalsData=[['FINANCIAL GOALS'],[],['No','Goal Name','Cost Today','Target Year','Inflation %','Future Value','Comments']];
+  S.goals.forEach(function(g,i){
+    var p=Math.max((IV(g.yr)||cur)-cur,0);
+    var fv=Math.round(N(g.cost)*Math.pow(1+N(g.inf)/100,p));
+    goalsData.push([i+1,g.name,g.cost,g.yr,g.inf,fv,g.comments]);
+  });
+  goalsData.push([]);
+  goalsData.push(['','TOTAL',S.goals.reduce(function(s,g){return s+N(g.cost);},0),'','',S.goals.reduce(function(s,g){var p=Math.max((IV(g.yr)||cur)-cur,0);return s+Math.round(N(g.cost)*Math.pow(1+N(g.inf)/100,p));},0),'']);
+  XLSX.utils.book_append_sheet(wb,makeWS(goalsData),'Goals');
+  // Inflows
+  var inflData=[['INFLOWS'],[],['MONTHLY INCOME'],['No','Particulars','Self /mo','Spouse /mo','Total /mo','Annual','Increment %']];
+  S.inflows.forEach(function(r,i){var tot=N(r.self)+N(r.sp);inflData.push([i+1,r.p,r.self,r.sp,tot,tot*12,r.inc]);});
+  inflData.push(['','TOTAL','','',t.mIn,t.mIn*12,'']);
+  inflData.push([],['YEARLY INFLOWS'],['No','Particulars','Amount','Year','Comments']);
+  if(S.yinflows.length){S.yinflows.forEach(function(r,i){inflData.push([i+1,r.p,r.amt,r.yr,r.c]);});}
+  else{inflData.push(['--','None','','','']);}
+  XLSX.utils.book_append_sheet(wb,makeWS(inflData),'Inflows');
+  // Outflows
+  var outData=[['OUTFLOWS'],[],['MONTHLY EXPENSES'],['No','Particulars','Monthly','Annual','Inflation %','Comments']];
+  S.expenses.forEach(function(r,i){outData.push([i+1,r.p,r.amt,r.amt*12,r.inf,r.c||'']);});
+  outData.push(['','TOTAL',S.expenses.reduce(function(s,r){return s+N(r.amt);},0),S.expenses.reduce(function(s,r){return s+N(r.amt);},0)*12,'','']);
+  outData.push([],['INVESTMENTS'],['No','Particulars','Monthly','Annual','Return %','Comments']);
+  S.investments.forEach(function(r,i){outData.push([i+1,r.p,r.amt,r.amt*12,r.ret,r.c||'']);});
+  outData.push(['','TOTAL',S.investments.reduce(function(s,r){return s+N(r.amt);},0),S.investments.reduce(function(s,r){return s+N(r.amt);},0)*12,'','']);
+  outData.push([],['LOAN EMIs'],['No','Particulars','EMI /mo','Annual']);
+  if(S.loans.length){S.loans.forEach(function(r,i){outData.push([i+1,r.p,r.emi,r.emi*12]);});}
+  else{outData.push(['--','None',0,0]);}
+  outData.push(['','TOTAL EMI',t.mEMI,t.mEMI*12]);
+  XLSX.utils.book_append_sheet(wb,makeWS(outData),'Outflows');
+  // Assets
+  var tFA=S.faAssets.reduce(function(s,r){return s+N(r.val);},0);
+  var tFL=S.flAssets.reduce(function(s,r){return s+N(r.val);},0);
+  var tFI=S.fiAssets.reduce(function(s,r){return s+N(r.val);},0);
+  var tLi=S.loans.reduce(function(s,r){return s+N(r.out);},0);
+  var astData=[['ASSETS'],[],['FIXED LIFESTYLE ASSETS'],['No','Particulars','Value','Liability','Comments']];
+  if(S.flAssets.length){S.flAssets.forEach(function(r,i){astData.push([i+1,r.p,r.val,r.lib,r.c]);});}
+  else{astData.push(['--','None',0,0,'']);}
+  astData.push([],['FIXED INVESTMENT ASSETS'],['No','Particulars','Value','Liability','Growth %','Comments']);
+  if(S.fiAssets.length){S.fiAssets.forEach(function(r,i){astData.push([i+1,r.p,r.val,r.lib,r.growth,r.c]);});}
+  else{astData.push(['--','None',0,0,0,'']);}
+  astData.push([],['FINANCIAL ASSETS'],['No','Particulars','Value','Return %','Category','Comments']);
+  S.faAssets.forEach(function(r,i){astData.push([i+1,r.p,r.val,r.ret,r.cat,r.c||'']);});
+  astData.push([],['SUMMARY'],['Total Financial Assets',tFA],['Total Fixed Assets',tFL+tFI],['Total Assets',tFA+tFL+tFI],['Total Liabilities',tLi],['NET WORTH',tFA+tFL+tFI-tLi]);
+  XLSX.utils.book_append_sheet(wb,makeWS(astData),'Assets');
+  // Loans
+  var loanData=[['LOAN DETAILS'],[],['No','Particulars','Lender','Start','End','EMI /mo','Rate %','Outstanding']];
+  if(S.loans.length){S.loans.forEach(function(r,i){loanData.push([i+1,r.p,r.lender,r.syr,r.eyr,r.emi,r.rate,r.out]);});}
+  else{loanData.push(['--','No loans','','','',0,0,0]);}
+  loanData.push([],['','TOTAL','','','',t.mEMI,'',tLi]);
+  XLSX.utils.book_append_sheet(wb,makeWS(loanData),'Loan Details');
+  // Insurance
+  var tPrem=S.insurance.reduce(function(s,r){return s+N(r.prem);},0);
+  var insData=[['INSURANCE'],[],['No','Plan Name','Type','Insured','Sum Assured','Annual Premium','Start','End','Maturity Value']];
+  if(S.insurance.length){S.insurance.forEach(function(r,i){insData.push([i+1,r.name,r.type,r.insured,r.sa,r.prem,r.syr,r.eyr,r.mat]);});}
+  else{insData.push(['--','No policies','','','',0,'','',0]);}
+  insData.push([],['','TOTAL ANNUAL PREMIUM','','','',tPrem,'','','']);
+  XLSX.utils.book_append_sheet(wb,makeWS(insData),'Insurance');
+  // Cash Flow
+  var cfData=[['CASH FLOW SUMMARY'],[],['Year','Opening','Inflow','Outflow','Surplus','Growth','Closing','Status']];
+  var open=0;
+  for(var y=0;y<Math.min(retYr-cur,40);y++){
+    var yr=cur+y;
+    var inf=t.mIn*12*Math.pow(1.08,y);
+    var outf=t.mOut*12*Math.pow(1.06,y);
+    var sur=inf-outf;
+    var grw=open*(avgRet/100);
+    var close=open+sur+grw;
+    cfData.push([yr,Math.round(open),Math.round(inf),Math.round(outf),Math.round(sur),Math.round(grw),Math.round(close),close>=0?'Surplus':'Deficit']);
+    open=close;
+  }
+  XLSX.utils.book_append_sheet(wb,makeWS(cfData),'CashFlow Summary');
+  // Post Retirement
+  var corpus=N(document.getElementById('rCorpus').value);
+  var rExp=N(document.getElementById('rExp').value);
+  var rRent=N(document.getElementById('rRent').value);
+  var rRet=N(document.getElementById('rRet').value)/100;
+  var rInf=N(document.getElementById('rInf').value)/100;
+  var rLife=IV(document.getElementById('rLife').value)||85;
+  var retAge=IV(document.getElementById('retAge').value)||58;
+  var prData=[['POST RETIREMENT'],['Corpus',corpus,'Monthly Expenses',rExp,'Rental Income',rRent],['Return %',rRet*100,'Inflation %',rInf*100,'Life Expectancy',rLife],[],['Year','Age','Opening','Rent','Expenses','Surplus','Growth','Closing']];
+  var rOpen=corpus;
+  for(var y2=0;y2<rLife-retAge;y2++){
+    var rentY=rRent*12*Math.pow(1.04,y2);
+    var expY=rExp*12*Math.pow(1+rInf,y2);
+    var sur2=rentY-expY;
+    var grw2=rOpen*rRet;
+    var close2=rOpen+sur2+grw2;
+    prData.push([retYr+y2,retAge+y2,Math.round(rOpen),Math.round(rentY),Math.round(expY),Math.round(sur2),Math.round(grw2),Math.round(close2)]);
+    rOpen=close2;
+    if(close2<0&&y2>2) break;
+  }
+  XLSX.utils.book_append_sheet(wb,makeWS(prData),'Post Retirement');
+  // Portfolio
+  var cats2={Equity:0,Hybrid:0,Debt:0,Others:0};
+  S.faAssets.forEach(function(r){var c=r.cat||'Others';cats2[c]=(cats2[c]||0)+N(r.val);});
+  var totPF=Object.values(cats2).reduce(function(a,b){return a+b;},0)||1;
+  var pfData=[['PORTFOLIO ANALYSIS'],[],['Category','Value','% of Portfolio']];
+  Object.keys(cats2).forEach(function(c){pfData.push([c,cats2[c],(cats2[c]/totPF*100).toFixed(1)+'%']);});
+  pfData.push(['TOTAL',totPF,'100%'],[],['FINANCIAL ASSETS DETAIL'],['Particulars','Value','Category','Return %']);
+  S.faAssets.filter(function(r){return r.p||r.val;}).forEach(function(r){pfData.push([r.p,r.val,r.cat,r.ret]);});
+  XLSX.utils.book_append_sheet(wb,makeWS(pfData),'Portfolio');
+  // Download via blob
+  var fname='FinPlan_'+selfName.replace(/\s+/g,'_')+'_FY'+fy+'-'+(fy+1)+'.xlsx';
+  var wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+  var blob=new Blob([wbout],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;a.download=fname;
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(url);a.remove();},300);
+}
+// INIT
+rendChildren();rendGoals();rendInflows();rendYInflows();rendExp();rendInv();rendAsts();rendFA();rendLoans();rendIns();updDash();
+</script>
+</body>
+</html>
